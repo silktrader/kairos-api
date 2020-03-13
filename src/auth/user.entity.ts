@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  Unique,
+  OneToMany,
+} from 'typeorm';
+import { Day } from 'src/schedule/day.entity';
 
 @Entity()
 @Unique(['email'])
@@ -11,4 +18,11 @@ export class User {
 
   @Column()
   hash: string;
+
+  @OneToMany(
+    () => Day,
+    day => day.user,
+    { eager: true },
+  )
+  days: Array<Day>;
 }
