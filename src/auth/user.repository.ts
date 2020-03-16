@@ -29,9 +29,7 @@ export class UserRepository extends Repository<User> {
     await this.save(user);
   }
 
-  async validateUser(credentialsDto: CredentialsDto): Promise<boolean> {
-    const user = await this.findOne({ email: credentialsDto.email });
-
-    return user && bcrypt.compare(credentialsDto.password, user.hash);
+  async findUser(credentialsDto: CredentialsDto): Promise<User> {
+    return await this.findOne({ email: credentialsDto.email });
   }
 }
