@@ -1,15 +1,11 @@
 import { IsNotEmpty, IsDateString } from 'class-validator';
 
-export class TaskDto {
+export class GetTasksDto {
   @IsNotEmpty()
   @IsDateString()
-  date: Date;
+  startDate: Date;
 
   @IsNotEmpty()
-  title: string;
-
-  @IsNotEmpty()
-  order: number;
-
-  details: string;
+  @IsDateString()
+  endDate: Date;
 }

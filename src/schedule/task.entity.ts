@@ -1,10 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Day } from './day.entity';
+import { User } from 'src/auth/user.entity';
 
 @Entity()
 export class Task {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'date' })
+  date: Date;
 
   @Column()
   order: number;
@@ -16,8 +19,8 @@ export class Task {
   details: string;
 
   @ManyToOne(
-    () => Day,
-    day => day.tasks,
+    () => User,
+    user => user.tasks,
   )
-  day: Day;
+  user: User;
 }

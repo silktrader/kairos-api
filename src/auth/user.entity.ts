@@ -5,7 +5,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Day } from 'src/schedule/day.entity';
+import { Task } from 'src/schedule/task.entity';
 
 @Entity()
 @Unique(['email'])
@@ -20,9 +20,8 @@ export class User {
   hash: string;
 
   @OneToMany(
-    () => Day,
-    day => day.user,
-    { eager: true },
+    () => Task,
+    task => task.user,
   )
-  days: Array<Day>;
+  tasks: Array<Task>;
 }
