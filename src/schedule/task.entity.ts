@@ -18,6 +18,9 @@ export class Task {
   @Column({ nullable: true })
   previousId?: number;
 
+  @Column()
+  userId: number;
+
   @ManyToOne(
     () => User,
     user => user.tasks,

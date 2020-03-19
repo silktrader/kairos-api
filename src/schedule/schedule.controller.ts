@@ -1,4 +1,14 @@
-import { Controller, Post, UseGuards, Body, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Get,
+  Query,
+  Delete,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ScheduleService } from './schedule.service';
 import { TaskDto } from './task.dto';
@@ -23,5 +33,13 @@ export class ScheduleController {
   @Get('tasks')
   async getTasks(@GetUser() user: User, @Query() getTasksDto: GetTasksDto) {
     return await this.scheduleService.getTasks(user, getTasksDto);
+  }
+
+  @Delete('tasks/:taskId')
+  async deleteTask(
+    @GetUser() user: User,
+    @Param('taskId', ParseIntPipe) taskId: number,
+  ) {
+    return await this.scheduleService.deleteTask(user, taskId);
   }
 }
