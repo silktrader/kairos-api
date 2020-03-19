@@ -10,13 +10,13 @@ export class Task {
   date: Date;
 
   @Column()
-  order: number;
-
-  @Column()
   title: string;
 
-  @Column()
-  details: string;
+  @Column({ nullable: true })
+  details?: string;
+
+  @Column({ nullable: true })
+  previousId?: number;
 
   @ManyToOne(
     () => User,

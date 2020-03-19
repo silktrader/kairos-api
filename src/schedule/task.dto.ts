@@ -8,8 +8,7 @@ export class TaskDto {
   @IsNotEmpty()
   title: string;
 
-  @IsNotEmpty()
-  order: number;
-
   details: string;
+
+  previousId: number;
 }
