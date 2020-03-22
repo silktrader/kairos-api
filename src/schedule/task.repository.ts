@@ -9,7 +9,7 @@ import {
 import { TaskDto } from './task.dto';
 import { User } from 'src/auth/user.entity';
 import { GetTasksDto } from './get-tasks.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
@@ -59,5 +59,16 @@ export class TaskRepository extends Repository<Task> {
 
   async deleteTask(task: Task): Promise<DeleteResult> {
     return this.delete(task);
+  }
+
+  /** Fetches all the tasks whose IDs are specified and which belong to the selected user. */
+  async getUserTasksById(
+    userId: number,
+    tasksIds: ReadonlyArray<number>,
+  ): Promise<ReadonlyArray<Task>> {
+    return this.createQueryBuilder('task')
+      .whereInIds(tasksIds)
+      .andWhere('task.userId = :userId', { userId })
+      .getMany();
   }
 }
