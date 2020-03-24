@@ -1,15 +1,8 @@
 import { Task } from './task.entity';
-import {
-  EntityRepository,
-  Repository,
-  Between,
-  Equal,
-  DeleteResult,
-} from 'typeorm';
+import { EntityRepository, Repository, Between, DeleteResult } from 'typeorm';
 import { TaskDto } from './task.dto';
 import { User } from 'src/auth/user.entity';
 import { GetTasksDto } from './get-tasks.dto';
-import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
@@ -47,6 +40,29 @@ export class TaskRepository extends Repository<Task> {
     await this.save(task);
 
     // remove sensitive data from Task
+    delete task.user;
+
+    return task;
+  }
+
+  async updateTask(
+    user: User,
+    taskId: number,
+    taskDto: TaskDto,
+  ): Promise<Task> {
+    // fetch the task first
+    const task = await this.getTaskById(taskId, user);
+    if (!task) {
+      return null;
+    }
+
+    // must implement mapper tk
+    task.date = taskDto.date;
+    task.title = taskDto.title;
+    task.details = taskDto.details;
+    await this.save(task);
+
+    // remove sensitive data (tk again map)
     delete task.user;
 
     return task;

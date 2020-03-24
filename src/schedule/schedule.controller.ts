@@ -9,6 +9,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ScheduleService } from './schedule.service';
@@ -35,6 +36,15 @@ export class ScheduleController {
   @Get('tasks')
   async getTasks(@GetUser() user: User, @Query() getTasksDto: GetTasksDto) {
     return await this.scheduleService.getTasks(user, getTasksDto);
+  }
+
+  @Put('tasks/:taskId')
+  async updateTask(
+    @GetUser() user: User,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Body() taskDto: TaskDto,
+  ) {
+    return await this.scheduleService.updateTask(user, taskId, taskDto);
   }
 
   @Delete('tasks/:taskId')

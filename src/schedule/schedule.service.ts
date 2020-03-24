@@ -26,6 +26,14 @@ export class ScheduleService {
     return await this.taskRepository.addTask(taskDto, user);
   }
 
+  async updateTask(
+    user: User,
+    taskId: number,
+    taskDto: TaskDto,
+  ): Promise<Task> {
+    return await this.taskRepository.updateTask(user, taskId, taskDto);
+  }
+
   async deleteTask(user: User, taskId: number): Promise<DeleteTaskDto> {
     // get the task, making sure the user owns it
     const deletedTask = await this.taskRepository.getTaskById(taskId, user);
@@ -72,8 +80,6 @@ export class ScheduleService {
       newTasksPositions.tasks.map(task => task.taskId),
     );
 
-    console.log(JSON.stringify(tasks));
-
     if (tasks.length != newTasksPositions.tasks.length) {
       throw new BadRequestException();
     }
@@ -104,52 +110,6 @@ export class ScheduleService {
 
     return tasks;
   }
-
-  // async updateTaskPosition(
-  //   user: User,
-  //   taskId: number,
-  //   previousId: number,
-  // ): Promise<ReadonlyArray<TaskDto>> {
-  //   // look for the involved task
-  //   const movingTask = await this.taskRepository.getTaskById(taskId, user);
-
-  //   if (!movingTask) {
-  //     throw new NotFoundException();
-  //   }
-
-  //   const movingTaskPreviousId = movingTask.previousId;
-
-  //   // change the task's previous ID to the new one
-  //   await this.taskRepository.updateTaskPreviousId(movingTask, previousId);
-
-  //   // prepare a list of affected tasks to update the client; wait for the updated repositioned task
-  //   const affectedTasks: Array<TaskDto> = [movingTask];
-
-  //   // change the task that referenced the moving task
-  //   const orphanTask = await this.taskRepository.getTaskByPreviousId(
-  //     taskId,
-  //     user,
-  //   );
-  //   if (orphanTask) {
-  //     await this.taskRepository.updateTaskPreviousId(
-  //       orphanTask,
-  //       movingTaskPreviousId,
-  //     );
-  //     affectedTasks.push(orphanTask);
-  //   }
-
-  //   // change the task that referenced the one on top of the moving task
-  //   const affectedTask = await this.taskRepository.getTaskByPreviousId(
-  //     previousId,
-  //     user,
-  //   );
-  //   if (affectedTask) {
-  //     await this.taskRepository.updateTaskPreviousId(affectedTask, taskId);
-  //     affectedTasks.push(affectedTask);
-  //   }
-
-  //   return affectedTasks;
-  // }
 
   async getTasks(user: User, getTasksDto: GetTasksDto) {
     return await this.taskRepository.getTasks(user, getTasksDto);
