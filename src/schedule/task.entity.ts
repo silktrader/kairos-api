@@ -19,6 +19,9 @@ export class Task {
   previousId?: number;
 
   @Column()
+  complete: boolean;
+
+  @Column()
   userId: number;
 
   @ManyToOne(

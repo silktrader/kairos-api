@@ -10,5 +10,7 @@ export class TaskDto {
 
   details?: string;
 
+  complete: boolean;
+
   previousId?: number;
 }

@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  UnauthorizedException,
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
@@ -11,7 +10,6 @@ import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { GetTasksDto } from './get-tasks.dto';
 import { DeleteTaskDto } from './deleteTask.dto';
-import { throwError } from 'rxjs';
 import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 import { Connection } from 'typeorm';
 
