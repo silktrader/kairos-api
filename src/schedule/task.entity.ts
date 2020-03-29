@@ -21,6 +21,9 @@ export class Task {
   @Column()
   complete: boolean;
 
+  @Column({ nullable: true })
+  duration: number;
+
   @Column()
   userId: number;
 

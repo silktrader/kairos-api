@@ -38,6 +38,7 @@ export class TaskRepository extends Repository<Task> {
     task.details = taskDto.details;
     task.previousId = taskDto.previousId;
     task.complete = taskDto.complete;
+    task.duration = taskDto.duration;
     task.user = user;
     await this.save(task);
 
@@ -63,6 +64,7 @@ export class TaskRepository extends Repository<Task> {
     task.title = taskDto.title;
     task.details = taskDto.details;
     task.complete = taskDto.complete;
+    task.duration = task.complete ? taskDto.duration : null;
     await this.save(task);
 
     // remove sensitive data (tk again map)
