@@ -12,6 +12,7 @@ import { GetTasksDto } from './get-tasks.dto';
 import { DeleteTaskDto } from './deleteTask.dto';
 import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 import { Connection } from 'typeorm';
+import { isSameDay, parseJSON, parseISO } from 'date-fns';
 
 @Injectable()
 export class ScheduleService {
@@ -29,7 +30,51 @@ export class ScheduleService {
     taskId: number,
     taskDto: TaskDto,
   ): Promise<Task> {
-    return await this.taskRepository.updateTask(user, taskId, taskDto);
+    // reference the task and check whether it exists
+    const initialTask = await this.taskRepository.getTaskById(taskId, user);
+
+    if (!initialTask) {
+      throw new NotFoundException(`Couldn't find task #${taskId}`);
+    }
+
+    // reset duration data when the task is incomplete
+    taskDto.duration = taskDto.complete ? taskDto.duration : null;
+
+    // check whether the date was changed
+    const a = parseISO(initialTask.date.toString());
+    const b = typeof initialTask.date;
+    if (
+      !isSameDay(parseISO(initialTask.date.toString()), parseJSON(taskDto.date))
+    ) {
+      // append the task to the bottom of the date's task list
+      const dateTasks = await this.taskRepository.getTasks(user, {
+        startDate: taskDto.date,
+        endDate: taskDto.date,
+      });
+      if (dateTasks) {
+        // check which task is positioned at the bottom
+        const checkingTasks = new Set<Task>(dateTasks);
+        let lastTaskId = null;
+
+        while (checkingTasks.size > 0) {
+          for (const task of checkingTasks) {
+            if (task.previousId === lastTaskId) {
+              // build the path to the last task
+              lastTaskId = task.id;
+
+              // speed up successive iterations; possible issue with changing collection while iterating
+              checkingTasks.delete(task);
+              break;
+            }
+          }
+        }
+
+        // assign the new reference ID
+        taskDto.previousId = lastTaskId;
+      }
+    }
+
+    return await this.taskRepository.updateTask(initialTask, taskDto);
   }
 
   async deleteTask(user: User, taskId: number): Promise<DeleteTaskDto> {

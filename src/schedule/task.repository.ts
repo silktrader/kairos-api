@@ -6,17 +6,6 @@ import { GetTasksDto } from './get-tasks.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
-  async getTaskById(id: number, user: User): Promise<Task> {
-    return this.findOne({
-      id,
-      userId: user.id,
-    });
-  }
-
-  async getTaskByPreviousId(previousId: number, user: User): Promise<Task> {
-    return this.findOne({ previousId, userId: user.id });
-  }
-
   async getTasks(
     user: User,
     getTasksDto: GetTasksDto,
@@ -27,6 +16,17 @@ export class TaskRepository extends Repository<Task> {
         date: Between(getTasksDto.startDate, getTasksDto.endDate),
       },
     });
+  }
+
+  async getTaskById(id: number, user: User): Promise<Task> {
+    return this.findOne({
+      id,
+      userId: user.id,
+    });
+  }
+
+  async getTaskByPreviousId(previousId: number, user: User): Promise<Task> {
+    return this.findOne({ previousId, userId: user.id });
   }
 
   async addTask(taskDto: TaskDto, user: User): Promise<Task> {
@@ -48,23 +48,14 @@ export class TaskRepository extends Repository<Task> {
     return task;
   }
 
-  async updateTask(
-    user: User,
-    taskId: number,
-    taskDto: TaskDto,
-  ): Promise<Task> {
-    // fetch the task first
-    const task = await this.getTaskById(taskId, user);
-    if (!task) {
-      return null;
-    }
-
+  async updateTask(task: Task, taskDto: TaskDto): Promise<Task> {
     // must implement mapper tk
     task.date = taskDto.date;
     task.title = taskDto.title;
     task.details = taskDto.details;
     task.complete = taskDto.complete;
-    task.duration = task.complete ? taskDto.duration : null;
+    task.duration = taskDto.duration;
+    task.previousId = taskDto.previousId;
     await this.save(task);
 
     // remove sensitive data (tk again map)

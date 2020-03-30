@@ -31,6 +31,7 @@
     "bcrypt": "^4.0.1",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.11.0",
+    "date-fns": "^2.11.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "pg": "^7.18.2",
