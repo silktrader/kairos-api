@@ -19,6 +19,7 @@ import { User } from 'src/auth/user.entity';
 import { Task } from './task.entity';
 import { GetTasksDto } from './get-tasks.dto';
 import { NewTasksPositionsDto } from './new-tasks-positions.dto';
+import { TaskUpdateDto } from './task-update.dto';
 
 @Controller('schedule')
 @UseGuards(AuthGuard())
@@ -45,6 +46,14 @@ export class ScheduleController {
     @Body() taskDto: TaskDto,
   ) {
     return await this.scheduleService.updateTask(user, taskId, taskDto);
+  }
+
+  @Put('tasks')
+  async updateTasks(
+    @GetUser() user: User,
+    @Body() tasks: ReadonlyArray<TaskUpdateDto>,
+  ) {
+    return await this.scheduleService.updateTasks(user, tasks);
   }
 
   @Delete('tasks/:taskId')

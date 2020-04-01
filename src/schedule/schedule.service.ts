@@ -13,6 +13,7 @@ import { DeleteTaskDto } from './deleteTask.dto';
 import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 import { Connection } from 'typeorm';
 import { isSameDay, parseJSON, parseISO } from 'date-fns';
+import { TaskUpdateDto } from './task-update.dto';
 
 @Injectable()
 export class ScheduleService {
@@ -41,8 +42,6 @@ export class ScheduleService {
     taskDto.duration = taskDto.complete ? taskDto.duration : null;
 
     // check whether the date was changed
-    const a = parseISO(initialTask.date.toString());
-    const b = typeof initialTask.date;
     if (
       !isSameDay(parseISO(initialTask.date.toString()), parseJSON(taskDto.date))
     ) {
@@ -75,6 +74,53 @@ export class ScheduleService {
     }
 
     return await this.taskRepository.updateTask(initialTask, taskDto);
+  }
+
+  async updateTasks(
+    user: User,
+    tasksDtos: ReadonlyArray<TaskUpdateDto>,
+  ): Promise<ReadonlyArray<Task>> {
+    const tasks = await this.taskRepository.getUserTasksById(
+      user.id,
+      tasksDtos.map(dto => dto.id),
+    );
+
+    if (tasks.length !== tasksDtos.length) {
+      throw new NotFoundException();
+    }
+
+    // map tasks by ID to ensure a match; arrays from getMany() might not follow order
+    const dtosMap = new Map<number, TaskUpdateDto>(
+      tasksDtos.map(dto => [dto.id, dto]),
+    );
+
+    // overwrite tasks in a single transaction or fail
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      for (const task of tasks) {
+        const dto = dtosMap.get(task.id);
+        task.title = dto.title;
+        task.details = dto.details;
+        task.date = dto.date;
+        task.previousId = dto.previousId;
+        task.complete = dto.complete;
+        task.duration = dto.duration;
+        await queryRunner.manager.save(task);
+      }
+      await queryRunner.commitTransaction();
+    } catch {
+      // apply all transactions or none at all
+      await queryRunner.rollbackTransaction();
+      throw new ConflictException();
+    } finally {
+      // must release the instantiated queryRunner
+      await queryRunner.release();
+    }
+
+    return tasks;
   }
 
   async deleteTask(user: User, taskId: number): Promise<DeleteTaskDto> {
