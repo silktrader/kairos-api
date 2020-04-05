@@ -8,7 +8,6 @@ import {
   Delete,
   Param,
   ParseIntPipe,
-  Patch,
   Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -18,7 +17,6 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { Task } from './task.entity';
 import { GetTasksDto } from './get-tasks.dto';
-import { NewTasksPositionsDto } from './new-tasks-positions.dto';
 import { TaskUpdateDto } from './task-update.dto';
 
 @Controller('schedule')
@@ -62,13 +60,5 @@ export class ScheduleController {
     @Param('taskId', ParseIntPipe) taskId: number,
   ) {
     return await this.scheduleService.deleteTask(user, taskId);
-  }
-
-  @Patch('tasks/positions')
-  async repositionTasks(
-    @GetUser() user: User,
-    @Body() newTasksPositions: NewTasksPositionsDto,
-  ) {
-    return await this.scheduleService.repositionTasks(user, newTasksPositions);
   }
 }
