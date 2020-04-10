@@ -14,5 +14,5 @@ export class TaskDto {
 
   duration?: number;
 
-  previousId?: number;
+  previousId: number | null;
 }

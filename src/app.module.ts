@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiConfigService } from './api-config/api-config.service';
 import { ApiConfigModule } from './api-config/api-config.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { HabitsModule } from './habits/habits.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ScheduleModule } from './schedule/schedule.module';
     AuthModule,
     ApiConfigModule,
     ScheduleModule,
+    HabitsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

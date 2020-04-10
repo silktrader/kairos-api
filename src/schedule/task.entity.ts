@@ -16,7 +16,7 @@ export class Task {
   details?: string;
 
   @Column({ nullable: true })
-  previousId?: number;
+  previousId: number;
 
   @Column()
   complete: boolean;

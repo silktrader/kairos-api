@@ -6,6 +6,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Task } from 'src/schedule/task.entity';
+import { Habit } from 'src/habits/habit.entity';
+import { HabitEntry } from 'src/habits/habit-entry.entity';
 
 @Entity()
 @Unique(['email'])
@@ -24,4 +26,10 @@ export class User {
     task => task.user,
   )
   tasks: Array<Task>;
+
+  @OneToMany(
+    () => Habit,
+    habit => habit.user,
+  )
+  habits: Array<Habit>;
 }
