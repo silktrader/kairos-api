@@ -1,11 +1,12 @@
 import { IsNotEmpty, IsDateString } from 'class-validator';
 
-export class DateRangeDto {
+export class HabitEntryDto {
   @IsNotEmpty()
-  @IsDateString()
-  startDate: Date;
+  habitId: number;
 
   @IsNotEmpty()
   @IsDateString()
-  endDate: Date;
+  date: Date;
+
+  comment: string;
 }

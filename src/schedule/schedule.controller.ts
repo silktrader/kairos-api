@@ -16,7 +16,7 @@ import { TaskDto } from './task.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { Task } from './task.entity';
-import { GetTasksDto } from './get-tasks.dto';
+import { DateRangeDto } from './get-tasks.dto';
 import { TaskUpdateDto } from './task-update.dto';
 
 @Controller('schedule')
@@ -33,8 +33,8 @@ export class ScheduleController {
   }
 
   @Get('tasks')
-  async getTasks(@GetUser() user: User, @Query() getTasksDto: GetTasksDto) {
-    return await this.scheduleService.getTasks(user, getTasksDto);
+  async getTasks(@GetUser() user: User, @Query() dateRangeDto: DateRangeDto) {
+    return await this.scheduleService.getTasks(user, dateRangeDto);
   }
 
   @Put('tasks/:taskId')

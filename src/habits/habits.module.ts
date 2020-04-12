@@ -4,9 +4,13 @@ import { HabitsController } from './habits.controller';
 import { HabitsService } from './habits.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HabitsRepository } from './habits.repository';
+import { HabitEntry } from './habit-entry.entity';
 
 @Module({
-  imports: [AuthModule, TypeOrmModule.forFeature([HabitsRepository])],
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([HabitsRepository, HabitEntry]),
+  ],
   controllers: [HabitsController],
   providers: [HabitsService],
 })

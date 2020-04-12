@@ -7,7 +7,7 @@ import { TaskDto } from './task.dto';
 import { User } from 'src/auth/user.entity';
 import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
-import { GetTasksDto } from './get-tasks.dto';
+import { DateRangeDto } from './get-tasks.dto';
 import { DeleteTaskDto } from './deleteTask.dto';
 import { Connection } from 'typeorm';
 import { isSameDay, parseJSON, parseISO } from 'date-fns';
@@ -157,7 +157,7 @@ export class ScheduleService {
     };
   }
 
-  async getTasks(user: User, getTasksDto: GetTasksDto) {
-    return await this.taskRepository.getTasks(user, getTasksDto);
+  async getTasks(user: User, dateRangeDto: DateRangeDto) {
+    return await this.taskRepository.getTasks(user, dateRangeDto);
   }
 }

@@ -2,13 +2,13 @@ import { Task } from './task.entity';
 import { EntityRepository, Repository, Between, DeleteResult } from 'typeorm';
 import { TaskDto } from './task.dto';
 import { User } from 'src/auth/user.entity';
-import { GetTasksDto } from './get-tasks.dto';
+import { DateRangeDto } from './get-tasks.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
   async getTasks(
     user: User,
-    getTasksDto: GetTasksDto,
+    getTasksDto: DateRangeDto,
   ): Promise<ReadonlyArray<Task>> {
     return this.find({
       where: {

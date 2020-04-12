@@ -1,10 +1,24 @@
-import { Controller, UseGuards, Post, Body, Get } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Post,
+  Body,
+  Get,
+  Query,
+  Delete,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
 import { HabitsService } from './habits.service';
+import { DateRangeDto } from 'src/schedule/get-tasks.dto';
+import { HabitEntryDto } from './habit-entry.dto';
+import { DeleteResult } from 'typeorm';
+import { ParseDatePipe } from './parse-date.pipe';
 
 @Controller('habits')
 @UseGuards(AuthGuard())
@@ -22,5 +36,30 @@ export class HabitsController {
   @Get()
   async getHabits(@GetUser() user: User): Promise<ReadonlyArray<Habit>> {
     return await this.habitsService.getHabits(user);
+  }
+
+  @Get('entries')
+  async getHabitsEntries(
+    @GetUser() user: User,
+    @Query() dateRangeDto: DateRangeDto,
+  ): Promise<ReadonlyArray<HabitEntryDto>> {
+    return await this.habitsService.getHabitsEntries(user, dateRangeDto);
+  }
+
+  @Post('entries')
+  async setHabitEntry(
+    @GetUser() user: User,
+    @Body() habitEntryDto: HabitEntryDto,
+  ): Promise<HabitEntryDto> {
+    return await this.habitsService.setHabitEntry(user, habitEntryDto);
+  }
+
+  @Delete('entries/:date/:habitId')
+  async deleteHabitEntry(
+    @GetUser() user: User,
+    @Param('date', ParseDatePipe) date: Date,
+    @Param('habitId', ParseIntPipe) habitId: number,
+  ): Promise<DeleteResult> {
+    return await this.habitsService.deleteHabitEntry(user, date, habitId);
   }
 }
