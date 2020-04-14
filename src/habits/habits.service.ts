@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { HabitsRepository } from './habits.repository';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
@@ -23,6 +23,20 @@ export class HabitsService {
 
   async getHabits(user: User): Promise<ReadonlyArray<Habit>> {
     return await this.habitsRepository.getHabits(user);
+  }
+
+  async updateHabit(id: number, dto: HabitDto, user: User): Promise<Habit> {
+    const habit = await this.habitsRepository.findOne(id);
+    if (!habit) throw new NotFoundException();
+
+    habit.title = dto.title;
+    habit.description = dto.description;
+    habit.colour = dto.colour;
+
+    const updatedHabit = await this.habitsRepository.save(habit);
+    delete updatedHabit.user;
+
+    return updatedHabit;
   }
 
   async getHabitsEntries(

@@ -8,6 +8,7 @@ import {
   Delete,
   Param,
   ParseIntPipe,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
@@ -36,6 +37,15 @@ export class HabitsController {
   @Get()
   async getHabits(@GetUser() user: User): Promise<ReadonlyArray<Habit>> {
     return await this.habitsService.getHabits(user);
+  }
+
+  @Put(':id')
+  async updateHabit(
+    @GetUser() user: User,
+    @Body() habitDto: HabitDto,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Habit> {
+    return await this.habitsService.updateHabit(id, habitDto, user);
   }
 
   @Get('entries')
