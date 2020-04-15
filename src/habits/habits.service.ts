@@ -39,6 +39,17 @@ export class HabitsService {
     return updatedHabit;
   }
 
+  async deleteHabit(id: number, user: User): Promise<DeleteResult> {
+    // check if the habit exists
+    const habit = await this.habitsRepository.findOne(id);
+    if (!habit) throw new NotFoundException();
+
+    // delete entries related to the deleted habit
+    await this.habitsEntriesRepository.delete({ habitId: id });
+
+    return await this.habitsRepository.delete(habit);
+  }
+
   async getHabitsEntries(
     user: User,
     dateRangeDto: DateRangeDto,

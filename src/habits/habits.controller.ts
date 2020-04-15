@@ -48,6 +48,14 @@ export class HabitsController {
     return await this.habitsService.updateHabit(id, habitDto, user);
   }
 
+  @Delete(':id')
+  async deleteHabit(
+    @GetUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<DeleteResult> {
+    return await this.habitsService.deleteHabit(id, user);
+  }
+
   @Get('entries')
   async getHabitsEntries(
     @GetUser() user: User,
