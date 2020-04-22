@@ -3,15 +3,15 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { TaskDto } from './task.dto';
+import { TaskDto } from './models/task.dto';
 import { User } from 'src/auth/user.entity';
 import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
-import { DateRangeDto } from './get-tasks.dto';
-import { DeleteTaskDto } from './deleteTask.dto';
+import { DateRangeDto } from './models/get-tasks.dto';
+import { DeleteTaskDto } from './models/deleteTask.dto';
 import { Connection } from 'typeorm';
 import { isSameDay, parseJSON, parseISO } from 'date-fns';
-import { TaskUpdateDto } from './task-update.dto';
+import { TaskUpdateDto } from './models/task-update.dto';
 
 @Injectable()
 export class TasksService {

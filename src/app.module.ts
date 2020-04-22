@@ -7,6 +7,7 @@ import { ApiConfigService } from './api-config/api-config.service';
 import { ApiConfigModule } from './api-config/api-config.module';
 import { TasksModule } from './tasks/tasks.module';
 import { HabitsModule } from './habits/habits.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { HabitsModule } from './habits/habits.module';
     ApiConfigModule,
     TasksModule,
     HabitsModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

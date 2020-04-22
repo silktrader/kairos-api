@@ -1,8 +1,8 @@
 import { Task } from './task.entity';
 import { EntityRepository, Repository, Between, DeleteResult } from 'typeorm';
-import { TaskDto } from './task.dto';
+import { TaskDto } from './models/task.dto';
 import { User } from 'src/auth/user.entity';
-import { DateRangeDto } from './get-tasks.dto';
+import { DateRangeDto } from './models/get-tasks.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {

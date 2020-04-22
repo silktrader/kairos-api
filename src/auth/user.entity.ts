@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Task } from 'src/tasks/task.entity';
 import { Habit } from 'src/habits/habit.entity';
+import { Tag } from 'src/tags/models/tag.entity';
 
 @Entity()
 @Unique(['email'])
@@ -31,4 +32,10 @@ export class User {
     habit => habit.user,
   )
   habits: Array<Habit>;
+
+  @OneToMany(
+    () => Tag,
+    tag => tag.user,
+  )
+  tags: Array<Tag>;
 }
