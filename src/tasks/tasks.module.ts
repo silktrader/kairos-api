@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ScheduleController } from './schedule.controller';
-import { ScheduleService } from './schedule.service';
+import { TasksController } from './tasks.controller';
+import { TasksService } from './tasks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { TaskRepository } from './task.repository';
 
 @Module({
   imports: [AuthModule, TypeOrmModule.forFeature([TaskRepository])],
-  controllers: [ScheduleController],
-  providers: [ScheduleService],
+  controllers: [TasksController],
+  providers: [TasksService],
 })
-export class ScheduleModule {}
+export class TasksModule {}

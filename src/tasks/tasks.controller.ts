@@ -11,7 +11,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ScheduleService } from './schedule.service';
+import { TasksService } from './tasks.service';
 import { TaskDto } from './task.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
@@ -19,12 +19,12 @@ import { Task } from './task.entity';
 import { DateRangeDto } from './get-tasks.dto';
 import { TaskUpdateDto } from './task-update.dto';
 
-@Controller('schedule')
+@Controller('tasks')
 @UseGuards(AuthGuard())
-export class ScheduleController {
-  constructor(private readonly scheduleService: ScheduleService) {}
+export class TasksController {
+  constructor(private readonly scheduleService: TasksService) {}
 
-  @Post('tasks')
+  @Post()
   async addTask(
     @GetUser() user: User,
     @Body() taskDto: TaskDto,
@@ -32,12 +32,12 @@ export class ScheduleController {
     return await this.scheduleService.addTask(user, taskDto);
   }
 
-  @Get('tasks')
+  @Get()
   async getTasks(@GetUser() user: User, @Query() dateRangeDto: DateRangeDto) {
     return await this.scheduleService.getTasks(user, dateRangeDto);
   }
 
-  @Put('tasks/:taskId')
+  @Put(':taskId')
   async updateTask(
     @GetUser() user: User,
     @Param('taskId', ParseIntPipe) taskId: number,
@@ -46,7 +46,7 @@ export class ScheduleController {
     return await this.scheduleService.updateTask(user, taskId, taskDto);
   }
 
-  @Put('tasks')
+  @Put()
   async updateTasks(
     @GetUser() user: User,
     @Body() tasks: ReadonlyArray<TaskUpdateDto>,
@@ -54,7 +54,7 @@ export class ScheduleController {
     return await this.scheduleService.updateTasks(user, tasks);
   }
 
-  @Delete('tasks/:taskId')
+  @Delete(':taskId')
   async deleteTask(
     @GetUser() user: User,
     @Param('taskId', ParseIntPipe) taskId: number,

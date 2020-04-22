@@ -16,7 +16,7 @@ import { User } from 'src/auth/user.entity';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
 import { HabitsService } from './habits.service';
-import { DateRangeDto } from 'src/schedule/get-tasks.dto';
+import { DateRangeDto } from 'src/tasks/get-tasks.dto';
 import { HabitEntryDto } from './habit-entry.dto';
 import { DeleteResult } from 'typeorm';
 import { ParseDatePipe } from './parse-date.pipe';

@@ -3,7 +3,7 @@ import { HabitsRepository } from './habits.repository';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
 import { User } from 'src/auth/user.entity';
-import { DateRangeDto } from 'src/schedule/get-tasks.dto';
+import { DateRangeDto } from 'src/tasks/get-tasks.dto';
 import { HabitEntry } from './habit-entry.entity';
 import { Repository, Between, DeleteResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

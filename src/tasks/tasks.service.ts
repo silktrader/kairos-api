@@ -14,7 +14,7 @@ import { isSameDay, parseJSON, parseISO } from 'date-fns';
 import { TaskUpdateDto } from './task-update.dto';
 
 @Injectable()
-export class ScheduleService {
+export class TasksService {
   constructor(
     private readonly taskRepository: TaskRepository,
     private connection: Connection,

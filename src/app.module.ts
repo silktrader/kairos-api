@@ -5,7 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiConfigService } from './api-config/api-config.service';
 import { ApiConfigModule } from './api-config/api-config.module';
-import { ScheduleModule } from './schedule/schedule.module';
+import { TasksModule } from './tasks/tasks.module';
 import { HabitsModule } from './habits/habits.module';
 
 @Module({
@@ -17,7 +17,7 @@ import { HabitsModule } from './habits/habits.module';
     }),
     AuthModule,
     ApiConfigModule,
-    ScheduleModule,
+    TasksModule,
     HabitsModule,
   ],
   controllers: [AppController],

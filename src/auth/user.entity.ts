@@ -5,9 +5,8 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Task } from 'src/schedule/task.entity';
+import { Task } from 'src/tasks/task.entity';
 import { Habit } from 'src/habits/habit.entity';
-import { HabitEntry } from 'src/habits/habit-entry.entity';
 
 @Entity()
 @Unique(['email'])
