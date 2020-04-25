@@ -33,7 +33,10 @@ export class TasksController {
   }
 
   @Get()
-  async getTasks(@GetUser() user: User, @Query() dateRangeDto: DateRangeDto) {
+  async getTasks(
+    @GetUser() user: User,
+    @Query() dateRangeDto: DateRangeDto,
+  ): Promise<ReadonlyArray<TaskDto>> {
     return await this.scheduleService.getTasks(user, dateRangeDto);
   }
 

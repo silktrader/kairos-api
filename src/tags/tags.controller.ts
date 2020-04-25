@@ -7,13 +7,16 @@ import {
   ParseIntPipe,
   Get,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { TagDto } from './models/tag.dto';
 import { TagsService } from './tags.service';
 import { DeleteResult } from 'typeorm';
+import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard())
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagService: TagsService) {}

@@ -15,18 +15,25 @@ export class TaskRepository extends Repository<Task> {
         userId: user.id,
         date: Between(getTasksDto.startDate, getTasksDto.endDate),
       },
+      relations: ['tags'],
     });
   }
 
   async getTaskById(id: number, user: User): Promise<Task> {
-    return this.findOne({
-      id,
-      userId: user.id,
-    });
+    return this.findOne(
+      {
+        id,
+        userId: user.id,
+      },
+      { relations: ['tags'] },
+    );
   }
 
   async getTaskByPreviousId(previousId: number, user: User): Promise<Task> {
-    return this.findOne({ previousId, userId: user.id });
+    return this.findOne(
+      { previousId, userId: user.id },
+      { relations: ['tags'] },
+    );
   }
 
   async addTask(taskDto: TaskDto, user: User): Promise<Task> {
@@ -46,6 +53,11 @@ export class TaskRepository extends Repository<Task> {
     delete task.user;
 
     return task;
+  }
+
+  // tk temp, must merge repo with service
+  async saveTask(task: Task): Promise<Task> {
+    return await this.save(task);
   }
 
   async updateTask(task: Task, taskDto: TaskDto): Promise<Task> {

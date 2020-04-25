@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { Tag } from './models/tag.entity';
 import { Repository, DeleteResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,22 +16,30 @@ export class TagsService {
     return await this.tagRepository.find({ user });
   }
 
-  async addTag(user: User, tagDto: TagDto): Promise<TagDto> {
+  /** Check whether a certain tag exists then calls the `saveTag` method */
+  async addTag(user: User, tagDto: TagDto): Promise<Tag> {
     // check for duplicates
-    await this.tagRepository.findOneOrFail({
+    const existingTag = await this.tagRepository.findOne({
       user,
-      name: tagDto.name,
+      name: tagDto.name.toLowerCase(),
     });
 
-    const tag = new Tag();
-    tag.name = tagDto.name;
-    tag.description = tagDto.description;
-    tag.user = user;
-    await this.tagRepository.save(tag);
+    if (existingTag) throw new ConflictException();
+
+    const tag = await this.saveTag(user, tagDto);
 
     // tk use class transformer to avoid this
     delete tag.user;
     return tag;
+  }
+
+  /** Saves a tag without checking performing any checks */
+  async saveTag(user: User, tagDto: TagDto): Promise<Tag> {
+    const tag = new Tag();
+    tag.name = tagDto.name.toLowerCase(); // ensure all tags are lowercase
+    tag.description = tagDto.description;
+    tag.user = user;
+    return await this.tagRepository.save(tag);
   }
 
   async deleteTag(user: User, id: number): Promise<DeleteResult> {
@@ -41,6 +49,11 @@ export class TagsService {
 
   async getTag(user: User, id: number): Promise<Tag> {
     return await this.tagRepository.findOneOrFail({ user, id });
+  }
+
+  async searchTagName(user: User, name: string): Promise<Tag | null> {
+    name = name.toLowerCase();
+    return await this.tagRepository.findOne({ user, name });
   }
 
   async updateTag(user: User, id: number, tagDto: TagDto): Promise<TagDto> {

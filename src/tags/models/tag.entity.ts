@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { User } from 'src/auth/user.entity';
+import { TaskTag } from './task-tag.entity';
 
 @Entity()
 export class Tag {
@@ -20,4 +27,10 @@ export class Tag {
     user => user.tags,
   )
   user: User;
+
+  @OneToMany(
+    () => TaskTag,
+    taskTag => taskTag.tag,
+  )
+  taskTags: Array<TaskTag>;
 }

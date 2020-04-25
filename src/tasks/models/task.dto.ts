@@ -1,6 +1,8 @@
 import { IsNotEmpty, IsDateString } from 'class-validator';
 
 export class TaskDto {
+  id?: number;
+
   @IsNotEmpty()
   @IsDateString()
   date: Date;
@@ -15,4 +17,6 @@ export class TaskDto {
   duration?: number;
 
   previousId: number | null;
+
+  tags: Array<string>;
 }

@@ -9,26 +9,59 @@ import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { DateRangeDto } from './models/get-tasks.dto';
 import { DeleteTaskDto } from './models/deleteTask.dto';
-import { Connection } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { isSameDay, parseJSON, parseISO } from 'date-fns';
 import { TaskUpdateDto } from './models/task-update.dto';
+import { TagsService } from 'src/tags/tags.service';
+import { Tag } from 'src/tags/models/tag.entity';
+import { TaskTag } from 'src/tags/models/task-tag.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly taskRepository: TaskRepository,
+    @InjectRepository(TaskTag)
+    private readonly taskTagRepository: Repository<TaskTag>,
+    private readonly tagsService: TagsService,
     private connection: Connection,
   ) {}
 
   async addTask(user: User, taskDto: TaskDto): Promise<Task> {
-    return await this.taskRepository.addTask(taskDto, user);
+    // select or create tags matching the ones in the DTO
+    const tags: Array<Tag> = [];
+
+    for (const tagName of taskDto.tags) {
+      // check if the tag exists
+      const tag =
+        (await this.tagsService.searchTagName(user, tagName)) ??
+        (await this.tagsService.saveTag(user, { name }));
+      tags.push(tag);
+    }
+
+    // create the task without the attached task tags
+    const task = await this.taskRepository.addTask(taskDto, user);
+
+    // create the relevant task tags
+    const taskTags: Array<TaskTag> = [];
+    for (const tag of tags) {
+      const taskTag = new TaskTag();
+      taskTag.tag = tag;
+      taskTag.task = task;
+      taskTags.push(taskTag);
+    }
+
+    // save all in one transaction
+    await this.taskTagRepository.save(taskTags);
+
+    return task;
   }
 
   async updateTask(
     user: User,
     taskId: number,
     taskDto: TaskDto,
-  ): Promise<Task> {
+  ): Promise<TaskDto> {
     // reference the task and check whether it exists
     const initialTask = await this.taskRepository.getTaskById(taskId, user);
 
@@ -39,6 +72,7 @@ export class TasksService {
     // reset duration data when the task is incomplete
     taskDto.duration = taskDto.complete ? taskDto.duration : null;
 
+    // tk this should prob happen client side, position checking
     // check whether the date was changed
     if (
       !isSameDay(parseISO(initialTask.date.toString()), parseJSON(taskDto.date))
@@ -71,7 +105,36 @@ export class TasksService {
       }
     }
 
-    return await this.taskRepository.updateTask(initialTask, taskDto);
+    // select or create tags matching the ones in the DTO
+    const initialTaskTagNames: Array<string> = [];
+
+    // check for tag entries to remove
+    for (const taskTag of initialTask.tags) {
+      initialTaskTagNames.push(taskTag.tag.name);
+      if (!taskDto.tags.includes(taskTag.tag.name))
+        this.taskTagRepository.remove(taskTag);
+    }
+
+    // add missing tag entries
+    for (const tagName of taskDto.tags) {
+      // create new task tag entry
+      if (!initialTaskTagNames.includes(tagName)) {
+        // create new tag when missing or reference an existing one
+        const tag =
+          (await this.tagsService.searchTagName(user, tagName)) ??
+          (await this.tagsService.addTag(user, { name: tagName }));
+
+        const taskTag = this.taskTagRepository.create({
+          task: initialTask,
+          tag: tag,
+        });
+        await this.taskTagRepository.save(taskTag);
+      }
+    }
+    return {
+      ...(await this.taskRepository.updateTask(initialTask, taskDto)),
+      tags: taskDto.tags,
+    };
   }
 
   async updateTasks(
@@ -151,13 +214,38 @@ export class TasksService {
       throw new NotFoundException();
     }
 
+    // tk use dto class-transformer
     return {
       deletedTaskId: deletedTask.id,
-      affectedTask,
+      affectedTask: {
+        ...affectedTask,
+        tags: affectedTask.tags.map(tag => tag.tag.name),
+      },
     };
   }
 
-  async getTasks(user: User, dateRangeDto: DateRangeDto) {
-    return await this.taskRepository.getTasks(user, dateRangeDto);
+  async getTasks(
+    user: User,
+    dateRangeDto: DateRangeDto,
+  ): Promise<ReadonlyArray<TaskDto>> {
+    return (await this.taskRepository.getTasks(user, dateRangeDto)).map(
+      this.mapTask,
+    );
+  }
+
+  mapTask(task: Task): TaskDto {
+    const { id, title, details, date, complete, duration, previousId } = task;
+    const tags = task.tags.map(taskTag => taskTag.tag.name);
+
+    return {
+      id,
+      title,
+      details,
+      date,
+      complete,
+      duration,
+      previousId,
+      tags,
+    };
   }
 }
