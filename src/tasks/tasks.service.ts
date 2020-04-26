@@ -27,7 +27,7 @@ export class TasksService {
     private connection: Connection,
   ) {}
 
-  async addTask(user: User, taskDto: TaskDto): Promise<Task> {
+  async addTask(user: User, taskDto: TaskDto): Promise<TaskDto> {
     // select or create tags matching the ones in the DTO
     const tags: Array<Tag> = [];
 
@@ -54,7 +54,7 @@ export class TasksService {
     // save all in one transaction
     await this.taskTagRepository.save(taskTags);
 
-    return task;
+    return this.mapTask(task);
   }
 
   async updateTask(
@@ -109,10 +109,14 @@ export class TasksService {
     const initialTaskTagNames: Array<string> = [];
 
     // check for tag entries to remove
-    for (const taskTag of initialTask.tags) {
-      initialTaskTagNames.push(taskTag.tag.name);
-      if (!taskDto.tags.includes(taskTag.tag.name))
-        this.taskTagRepository.remove(taskTag);
+    // for (const taskTag of initialTask.tags) {
+    for (let i = initialTask.tags.length - 1; i >= 0; i--) {
+      const name = initialTask.tags[i].tag.name;
+      initialTaskTagNames.push(name);
+      if (!taskDto.tags.includes(name)) {
+        this.taskTagRepository.remove(initialTask.tags[i]);
+        initialTask.tags.splice(i, 1);
+      }
     }
 
     // add missing tag entries
@@ -128,7 +132,8 @@ export class TasksService {
           task: initialTask,
           tag: tag,
         });
-        await this.taskTagRepository.save(taskTag);
+        initialTask.tags.push(taskTag);
+        // await this.taskTagRepository.save(taskTag);
       }
     }
     return {
@@ -235,7 +240,7 @@ export class TasksService {
 
   mapTask(task: Task): TaskDto {
     const { id, title, details, date, complete, duration, previousId } = task;
-    const tags = task.tags.map(taskTag => taskTag.tag.name);
+    const tags = task.tags?.map(taskTag => taskTag.tag.name) ?? [];
 
     return {
       id,

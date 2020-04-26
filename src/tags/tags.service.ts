@@ -17,7 +17,7 @@ export class TagsService {
   }
 
   /** Check whether a certain tag exists then calls the `saveTag` method */
-  async addTag(user: User, tagDto: TagDto): Promise<Tag> {
+  async addTag(user: User, tagDto: TagDto): Promise<TagDto> {
     // check for duplicates
     const existingTag = await this.tagRepository.findOne({
       user,

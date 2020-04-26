@@ -15,7 +15,6 @@ export class TaskRepository extends Repository<Task> {
         userId: user.id,
         date: Between(getTasksDto.startDate, getTasksDto.endDate),
       },
-      relations: ['tags'],
     });
   }
 

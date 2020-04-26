@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   OneToMany,
-  JoinTable,
 } from 'typeorm';
 import { User } from 'src/auth/user.entity';
 import { TaskTag } from 'src/tags/models/task-tag.entity';
@@ -44,6 +43,7 @@ export class Task {
   @OneToMany(
     () => TaskTag,
     taskTag => taskTag.task,
+    { eager: true, cascade: true },
   )
   tags: Array<TaskTag>;
 }
