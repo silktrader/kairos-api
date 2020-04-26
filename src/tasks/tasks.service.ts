@@ -145,7 +145,7 @@ export class TasksService {
   async updateTasks(
     user: User,
     tasksDtos: ReadonlyArray<TaskUpdateDto>,
-  ): Promise<ReadonlyArray<Task>> {
+  ): Promise<ReadonlyArray<TaskDto>> {
     const tasks = await this.taskRepository.getUserTasksById(
       user.id,
       tasksDtos.map(dto => dto.id),
@@ -186,7 +186,7 @@ export class TasksService {
       await queryRunner.release();
     }
 
-    return tasks;
+    return tasks.map(this.mapTask);
   }
 
   async deleteTask(user: User, taskId: number): Promise<DeleteTaskDto> {
@@ -238,7 +238,7 @@ export class TasksService {
     );
   }
 
-  mapTask(task: Task): TaskDto {
+  private mapTask(task: Task): TaskDto {
     const { id, title, details, date, complete, duration, previousId } = task;
     const tags = task.tags?.map(taskTag => taskTag.tag.name) ?? [];
 

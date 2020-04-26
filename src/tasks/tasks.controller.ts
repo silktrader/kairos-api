@@ -18,6 +18,7 @@ import { User } from 'src/auth/user.entity';
 import { Task } from './task.entity';
 import { DateRangeDto } from './models/get-tasks.dto';
 import { TaskUpdateDto } from './models/task-update.dto';
+import { DeleteTaskDto } from './models/deleteTask.dto';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
@@ -28,7 +29,7 @@ export class TasksController {
   async addTask(
     @GetUser() user: User,
     @Body() taskDto: TaskDto,
-  ): Promise<Task> {
+  ): Promise<TaskDto> {
     return await this.scheduleService.addTask(user, taskDto);
   }
 
@@ -45,7 +46,7 @@ export class TasksController {
     @GetUser() user: User,
     @Param('taskId', ParseIntPipe) taskId: number,
     @Body() taskDto: TaskDto,
-  ) {
+  ): Promise<TaskDto> {
     return await this.scheduleService.updateTask(user, taskId, taskDto);
   }
 
@@ -53,7 +54,7 @@ export class TasksController {
   async updateTasks(
     @GetUser() user: User,
     @Body() tasks: ReadonlyArray<TaskUpdateDto>,
-  ) {
+  ): Promise<ReadonlyArray<TaskDto>> {
     return await this.scheduleService.updateTasks(user, tasks);
   }
 
@@ -61,7 +62,7 @@ export class TasksController {
   async deleteTask(
     @GetUser() user: User,
     @Param('taskId', ParseIntPipe) taskId: number,
-  ) {
+  ): Promise<DeleteTaskDto> {
     return await this.scheduleService.deleteTask(user, taskId);
   }
 }
