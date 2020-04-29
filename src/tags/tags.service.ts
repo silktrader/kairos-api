@@ -49,7 +49,7 @@ export class TagsService {
   /** Saves a tag without checking performing any checks */
   private async saveTag(user: User, tagDto: TagDto): Promise<Tag> {
     const tag = new Tag();
-    tag.name = tagDto.name.toLowerCase(); // ensure all tags are lowercase
+    tag.name = tagDto.name;
     tag.description = tagDto.description;
     tag.user = user;
     tag.colour = tagDto.colour;
@@ -65,7 +65,6 @@ export class TagsService {
   }
 
   async searchTagName(user: User, name: string): Promise<Tag | null> {
-    name = name.toLowerCase();
     return await this.tagRepository.findOne({ user, name });
   }
 
@@ -73,6 +72,7 @@ export class TagsService {
     const tag = await this.getTag(user, id);
     tag.name = tagDto.name;
     tag.description = tagDto.description;
+    tag.colour = tagDto.colour;
     return await this.tagRepository.save(tag);
   }
 }
