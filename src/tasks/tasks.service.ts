@@ -31,11 +31,9 @@ export class TasksService {
     // select or create tags matching the ones in the DTO
     const tags: Array<Tag> = [];
 
-    for (const tagName of taskDto.tags) {
+    for (const name of taskDto.tags) {
       // check if the tag exists
-      const tag =
-        (await this.tagsService.searchTagName(user, tagName)) ??
-        (await this.tagsService.saveTag(user, { name }));
+      const tag = await this.tagsService.getOrAddTag(user, name);
       tags.push(tag);
     }
 
@@ -124,9 +122,7 @@ export class TasksService {
       // create new task tag entry
       if (!initialTaskTagNames.includes(tagName)) {
         // create new tag when missing or reference an existing one
-        const tag =
-          (await this.tagsService.searchTagName(user, tagName)) ??
-          (await this.tagsService.addTag(user, { name: tagName }));
+        const tag = await this.tagsService.getOrAddTag(user, tagName);
 
         const taskTag = this.taskTagRepository.create({
           task: initialTask,

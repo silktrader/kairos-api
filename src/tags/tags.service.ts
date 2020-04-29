@@ -4,6 +4,7 @@ import { Repository, DeleteResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TagDto } from './models/tag.dto';
 import { User } from 'src/auth/user.entity';
+import randomColor from 'randomcolor';
 
 @Injectable()
 export class TagsService {
@@ -33,18 +34,30 @@ export class TagsService {
     return tag;
   }
 
+  async getOrAddTag(user: User, name: string): Promise<Tag> {
+    return (
+      (await this.searchTagName(user, name)) ??
+      (await this.saveTag(user, {
+        name,
+        colour: randomColor({
+          luminosity: 'light',
+        }),
+      }))
+    );
+  }
+
   /** Saves a tag without checking performing any checks */
-  async saveTag(user: User, tagDto: TagDto): Promise<Tag> {
+  private async saveTag(user: User, tagDto: TagDto): Promise<Tag> {
     const tag = new Tag();
     tag.name = tagDto.name.toLowerCase(); // ensure all tags are lowercase
     tag.description = tagDto.description;
     tag.user = user;
+    tag.colour = tagDto.colour;
     return await this.tagRepository.save(tag);
   }
 
   async deleteTag(user: User, id: number): Promise<DeleteResult> {
-    const existingTag = await this.getTag(user, id);
-    return await this.tagRepository.delete(existingTag);
+    return await this.tagRepository.delete(await this.getTag(user, id));
   }
 
   async getTag(user: User, id: number): Promise<Tag> {

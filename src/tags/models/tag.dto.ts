@@ -5,4 +5,7 @@ export class TagDto {
   name: string;
 
   description?: string;
+
+  @IsNotEmpty()
+  colour: string;
 }

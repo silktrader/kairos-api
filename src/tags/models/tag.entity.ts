@@ -16,6 +16,9 @@ export class Tag {
   @Column()
   name: string;
 
+  @Column()
+  colour: string;
+
   @Column({ nullable: true })
   description: string;
 
