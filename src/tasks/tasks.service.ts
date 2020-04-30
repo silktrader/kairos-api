@@ -169,7 +169,7 @@ export class TasksService {
         const dto = dtosMap.get(task.id);
         task.title = dto.title;
         task.details = dto.details;
-        task.date = parseISO(dto.date);
+        task.date = dto.date;
         task.previousId = dto.previousId;
         task.complete = dto.complete;
         task.duration = dto.duration;
@@ -192,13 +192,15 @@ export class TasksService {
     // get the task, making sure the user owns it
     const deletedTask = await this.taskRepository.getTaskById(taskId, user);
 
-    if (!deletedTask) {
+    const deletionResult = await this.taskRepository.deleteTask(deletedTask);
+
+    if (deletionResult.affected === 0) {
       throw new NotFoundException();
     }
 
     // check whether there's a task which references the deleted one
     const affectedTask = await this.taskRepository.getTaskByPreviousId(
-      deletedTask.id,
+      taskId,
       user,
     );
 
@@ -210,19 +212,13 @@ export class TasksService {
       );
       // remove sensitive date from orphan task, later apply mapper tk
       delete affectedTask.user;
+
+      return {
+        affectedTask: this.mapTask(affectedTask),
+      };
     }
 
-    const deletionResult = await this.taskRepository.deleteTask(deletedTask);
-
-    if (deletionResult.affected === 0) {
-      throw new NotFoundException();
-    }
-
-    // tk use dto class-transformer mapper
-    return {
-      deletedTaskId: deletedTask.id,
-      affectedTask: this.mapTask(affectedTask),
-    };
+    return { affectedTask: null };
   }
 
   async getTasks(
@@ -242,7 +238,7 @@ export class TasksService {
       id,
       title,
       details,
-      date: format(date, 'yyyy-MM-dd'),
+      date,
       complete,
       duration,
       previousId,

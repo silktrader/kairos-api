@@ -40,7 +40,7 @@ export class TaskRepository extends Repository<Task> {
     // read the latest task's position
     // tk user mapper
     const task = new Task();
-    task.date = parseISO(taskDto.date);
+    task.date = taskDto.date;
     task.title = taskDto.title;
     task.details = taskDto.details;
     task.previousId = taskDto.previousId;
@@ -62,7 +62,7 @@ export class TaskRepository extends Repository<Task> {
 
   async updateTask(task: Task, taskDto: TaskDto): Promise<Task> {
     // must implement mapper tk
-    task.date = parseISO(taskDto.date);
+    task.date = taskDto.date;
     task.title = taskDto.title;
     task.details = taskDto.details;
     task.complete = taskDto.complete;

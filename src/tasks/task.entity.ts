@@ -14,7 +14,7 @@ export class Task {
   id: number;
 
   @Column({ type: 'date' })
-  date: Date;
+  date: string;
 
   @Column()
   title: string;

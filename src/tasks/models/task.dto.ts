@@ -16,6 +16,7 @@ export class TaskDto {
 
   duration?: number;
 
+  @IsNotEmpty()
   previousId: number | null;
 
   tags: Array<string>;
