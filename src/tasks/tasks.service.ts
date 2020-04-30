@@ -10,7 +10,7 @@ import { Task } from './task.entity';
 import { DateRangeDto } from './models/get-tasks.dto';
 import { DeleteTaskDto } from './models/deleteTask.dto';
 import { Connection, Repository } from 'typeorm';
-import { isSameDay, parseJSON, parseISO } from 'date-fns';
+import { isSameDay, parseJSON, parseISO, format } from 'date-fns';
 import { TaskUpdateDto } from './models/task-update.dto';
 import { TagsService } from 'src/tags/tags.service';
 import { Tag } from 'src/tags/models/tag.entity';
@@ -72,13 +72,12 @@ export class TasksService {
 
     // tk this should prob happen client side, position checking
     // check whether the date was changed
-    if (
-      !isSameDay(parseISO(initialTask.date.toString()), parseJSON(taskDto.date))
-    ) {
+    const parsedDtoDate = parseISO(taskDto.date);
+    if (!isSameDay(parseISO(initialTask.date.toString()), parsedDtoDate)) {
       // append the task to the bottom of the date's task list
       const dateTasks = await this.taskRepository.getTasks(user, {
-        startDate: taskDto.date,
-        endDate: taskDto.date,
+        startDate: parsedDtoDate,
+        endDate: parsedDtoDate,
       });
       if (dateTasks) {
         // check which task is positioned at the bottom
@@ -132,8 +131,11 @@ export class TasksService {
         // await this.taskTagRepository.save(taskTag);
       }
     }
+
+    // tk use mapper
     return {
       ...(await this.taskRepository.updateTask(initialTask, taskDto)),
+      date: taskDto.date,
       tags: taskDto.tags,
     };
   }
@@ -161,12 +163,13 @@ export class TasksService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    // tk mapper
     try {
       for (const task of tasks) {
         const dto = dtosMap.get(task.id);
         task.title = dto.title;
         task.details = dto.details;
-        task.date = dto.date;
+        task.date = parseISO(dto.date);
         task.previousId = dto.previousId;
         task.complete = dto.complete;
         task.duration = dto.duration;
@@ -215,13 +218,10 @@ export class TasksService {
       throw new NotFoundException();
     }
 
-    // tk use dto class-transformer
+    // tk use dto class-transformer mapper
     return {
       deletedTaskId: deletedTask.id,
-      affectedTask: {
-        ...affectedTask,
-        tags: affectedTask.tags.map(tag => tag.tag.name),
-      },
+      affectedTask: this.mapTask(affectedTask),
     };
   }
 
@@ -242,7 +242,7 @@ export class TasksService {
       id,
       title,
       details,
-      date,
+      date: format(date, 'yyyy-MM-dd'),
       complete,
       duration,
       previousId,

@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsISO8601 } from 'class-validator';
 
 export class DateRangeDto {
   @IsNotEmpty()
-  @IsDateString()
+  @IsISO8601()
   startDate: Date;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsISO8601()
   endDate: Date;
 }

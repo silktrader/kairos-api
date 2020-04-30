@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsISO8601 } from 'class-validator';
 
 export class TaskDto {
   id?: number;
 
   @IsNotEmpty()
-  @IsDateString()
-  date: Date;
+  @IsISO8601()
+  date: string;
 
   @IsNotEmpty()
   title: string;
