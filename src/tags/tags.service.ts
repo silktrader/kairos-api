@@ -22,7 +22,7 @@ export class TagsService {
     // check for duplicates
     const existingTag = await this.tagRepository.findOne({
       user,
-      name: tagDto.name.toLowerCase(),
+      name: tagDto.name,
     });
 
     if (existingTag) throw new ConflictException();

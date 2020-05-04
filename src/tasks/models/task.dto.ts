@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsISO8601 } from 'class-validator';
+import { IsNotEmpty, IsISO8601, IsOptional } from 'class-validator';
 
 export class TaskDto {
   id?: number;
@@ -17,6 +17,7 @@ export class TaskDto {
   duration?: number;
 
   @IsNotEmpty()
+  @IsOptional()
   previousId: number | null;
 
   tags: Array<string>;

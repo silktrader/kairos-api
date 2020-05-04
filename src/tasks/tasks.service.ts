@@ -9,13 +9,14 @@ import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { DateRangeDto } from './models/get-tasks.dto';
 import { DeleteTaskDto } from './models/deleteTask.dto';
-import { Connection, Repository } from 'typeorm';
-import { isSameDay, parseJSON, parseISO, format } from 'date-fns';
+import { Connection, Repository, DeleteResult } from 'typeorm';
+import { isSameDay, parseISO } from 'date-fns';
 import { TaskUpdateDto } from './models/task-update.dto';
 import { TagsService } from 'src/tags/tags.service';
 import { Tag } from 'src/tags/models/tag.entity';
 import { TaskTag } from 'src/tags/models/task-tag.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TaskTimer } from './task-timer.entity';
 
 @Injectable()
 export class TasksService {
@@ -23,6 +24,8 @@ export class TasksService {
     private readonly taskRepository: TaskRepository,
     @InjectRepository(TaskTag)
     private readonly taskTagRepository: Repository<TaskTag>,
+    @InjectRepository(TaskTimer)
+    private readonly taskTimerRepository: Repository<TaskTimer>,
     private readonly tagsService: TagsService,
     private connection: Connection,
   ) {}
@@ -244,5 +247,39 @@ export class TasksService {
       previousId,
       tags,
     };
+  }
+
+  /* Timer methods */
+
+  /** Get all the timers related to user owner tasks */
+  async getTimers(user: User): Promise<Array<TaskTimer>> {
+    return await this.taskTimerRepository
+      .createQueryBuilder('taskTimer')
+      .leftJoinAndSelect('taskTimer.task', 'task')
+      .where('task.userId = :userId', { userId: user.id })
+      .getMany();
+  }
+
+  async addTimer(
+    user: User,
+    taskId: number,
+    timestamp: number,
+  ): Promise<TaskTimer> {
+    // check whether the task exists
+    await this.taskRepository.findOneOrFail({ user, id: taskId });
+
+    // create and save entity
+    const timer = this.taskTimerRepository.create({
+      taskId,
+      timestamp: new Date(timestamp),
+    });
+    return await this.taskTimerRepository.save(timer);
+  }
+
+  async deleteTimer(user: User, timerId: number): Promise<DeleteResult> {
+    // check whether the timer exists
+    const timer = await this.taskTimerRepository.findOneOrFail(timerId);
+
+    return await this.taskTimerRepository.delete(timer);
   }
 }
