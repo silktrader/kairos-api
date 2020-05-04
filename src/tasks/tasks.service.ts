@@ -70,9 +70,6 @@ export class TasksService {
       throw new NotFoundException(`Couldn't find task #${taskId}`);
     }
 
-    // reset duration data when the task is incomplete
-    taskDto.duration = taskDto.complete ? taskDto.duration : null;
-
     // tk this should prob happen client side, position checking
     // check whether the date was changed
     const parsedDtoDate = parseISO(taskDto.date);
