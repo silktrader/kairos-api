@@ -5,12 +5,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TagDto } from './models/tag.dto';
 import { User } from 'src/auth/user.entity';
 import randomColor from 'randomcolor';
+import { TaskTag } from './models/task-tag.entity';
 
 @Injectable()
 export class TagsService {
   constructor(
     @InjectRepository(Tag)
     private tagRepository: Repository<Tag>,
+    @InjectRepository(TaskTag)
+    private taskTagRepository: Repository<TaskTag>,
   ) {}
 
   async getTags(user: User): Promise<ReadonlyArray<TagDto>> {
@@ -57,7 +60,15 @@ export class TagsService {
   }
 
   async deleteTag(user: User, id: number): Promise<DeleteResult> {
-    return await this.tagRepository.delete(await this.getTag(user, id));
+    // fails when not finding a tag owned by the selected user
+    const tag = await this.getTag(user, id);
+
+    // find all the tag entries related to this tag and delete them
+    // this is preferable to setting up cascades which are database dependent
+    const tagEntries = await this.taskTagRepository.find({ tag });
+    await this.taskTagRepository.remove(tagEntries);
+
+    return await this.tagRepository.delete(tag);
   }
 
   async getTag(user: User, id: number): Promise<Tag> {
