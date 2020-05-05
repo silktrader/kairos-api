@@ -55,7 +55,8 @@ export class TasksService {
     // save all in one transaction
     await this.taskTagRepository.save(taskTags);
 
-    return this.mapTask(task);
+    // this isn't ideal but the refetch ensures that all eager relations are reloaded
+    return this.mapTask(await this.taskRepository.findOneOrFail(task.id));
   }
 
   async updateTask(
@@ -192,11 +193,14 @@ export class TasksService {
     // get the task, making sure the user owns it
     const deletedTask = await this.taskRepository.getTaskById(taskId, user);
 
-    const deletionResult = await this.taskRepository.deleteTask(deletedTask);
+    // first remove all task tags entries, as cascades are turned off
+    const deletedTaskTags = await this.taskTagRepository.find({
+      task: deletedTask,
+    });
+    await this.taskTagRepository.remove(deletedTaskTags);
 
-    if (deletionResult.affected === 0) {
-      throw new NotFoundException();
-    }
+    // remove the task
+    await this.taskRepository.deleteTask(deletedTask);
 
     // check whether there's a task which references the deleted one
     const affectedTask = await this.taskRepository.getTaskByPreviousId(
@@ -204,14 +208,12 @@ export class TasksService {
       user,
     );
 
-    // shorten the linked list
+    // shorten the linked list and return the affected task
     if (affectedTask) {
       await this.taskRepository.updateTaskPreviousId(
         affectedTask,
         deletedTask.previousId,
       );
-      // remove sensitive date from orphan task, later apply mapper tk
-      delete affectedTask.user;
 
       return {
         affectedTask: this.mapTask(affectedTask),

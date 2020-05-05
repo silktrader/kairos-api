@@ -43,7 +43,7 @@ export class Task {
   @OneToMany(
     () => TaskTag,
     taskTag => taskTag.task,
-    { eager: true, cascade: true },
+    { eager: true },
   )
   tags: Array<TaskTag>;
 }

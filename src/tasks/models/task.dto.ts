@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsISO8601, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsISO8601, IsOptional, Length } from 'class-validator';
 
 export class TaskDto {
   id?: number;
@@ -8,6 +8,7 @@ export class TaskDto {
   date: string;
 
   @IsNotEmpty()
+  @Length(5, 50)
   title: string;
 
   details?: string;
