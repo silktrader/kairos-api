@@ -3,7 +3,7 @@ import { IsNotEmpty, IsLowercase, Length, IsAlpha } from 'class-validator';
 export class TagDto {
   @IsNotEmpty()
   @IsLowercase()
-  @Length(3, 12)
+  @Length(3, 15)
   @IsAlpha()
   name: string;
 

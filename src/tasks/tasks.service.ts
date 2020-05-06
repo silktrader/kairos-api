@@ -129,7 +129,7 @@ export class TasksService {
           tag: tag,
         });
         initialTask.tags.push(taskTag);
-        // await this.taskTagRepository.save(taskTag);
+        await this.taskTagRepository.save(taskTag);
       }
     }
 

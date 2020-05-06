@@ -7,7 +7,7 @@ export class HabitEntry {
   habitId: number;
 
   @PrimaryColumn({ type: 'date' })
-  date: Date;
+  date: string;
 
   @Column()
   comment: string;

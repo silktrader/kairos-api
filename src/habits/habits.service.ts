@@ -77,7 +77,7 @@ export class HabitsService {
 
   async deleteHabitEntry(
     user: User,
-    date: Date,
+    date: string,
     habitId: number,
   ): Promise<DeleteResult> {
     const habitEntry = await this.habitsEntriesRepository.findOneOrFail({

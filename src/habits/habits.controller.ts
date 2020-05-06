@@ -75,7 +75,7 @@ export class HabitsController {
   @Delete('entries/:date/:habitId')
   async deleteHabitEntry(
     @GetUser() user: User,
-    @Param('date', ParseDatePipe) date: Date,
+    @Param('date') date: string,
     @Param('habitId', ParseIntPipe) habitId: number,
   ): Promise<DeleteResult> {
     return await this.habitsService.deleteHabitEntry(user, date, habitId);

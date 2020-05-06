@@ -1,12 +1,12 @@
-import { IsNotEmpty, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsISO8601 } from 'class-validator';
 
 export class HabitEntryDto {
   @IsNotEmpty()
   habitId: number;
 
   @IsNotEmpty()
-  @IsDateString()
-  date: Date;
+  @IsISO8601()
+  date: string;
 
   comment: string;
 }
