@@ -225,6 +225,7 @@ export class TasksService {
     user: User,
     dates: Array<string>,
   ): Promise<ReadonlyArray<TaskDto>> {
+    //throw new NotFoundException();
     return (await this.taskRepository.getTasksInDates(user, dates)).map(
       this.mapTask,
     );
@@ -257,13 +258,24 @@ export class TasksService {
       .getMany();
   }
 
+  /** Check whether the task exists and ensure that the user owns it */
+  async getTimerOrFail(user: User, taskId: number): Promise<TaskTimer> {
+    const timer = await this.taskTimerRepository
+      .createQueryBuilder('taskTimer')
+      .leftJoinAndSelect('taskTimer.task', 'task')
+      .where('taskTimer.taskId = :taskId', { taskId })
+      .andWhere('task.userId = :userId', { userId: user.id })
+      .getOne();
+    if (!timer) throw new NotFoundException();
+    return timer;
+  }
+
   async addTimer(
     user: User,
     taskId: number,
     timestamp: number,
   ): Promise<TaskTimer> {
-    // check whether the task exists
-    await this.taskRepository.findOneOrFail({ user, id: taskId });
+    await this.taskRepository.findOneOrFail({ id: taskId, userId: user.id });
 
     // create and save entity
     const timer = this.taskTimerRepository.create({
@@ -274,8 +286,8 @@ export class TasksService {
   }
 
   async deleteTimer(user: User, timerId: number): Promise<DeleteResult> {
-    // check whether the timer exists
-    const timer = await this.taskTimerRepository.findOneOrFail(timerId);
+    // check whether the timer exists and the user owns it
+    const timer = await this.getTimerOrFail(user, timerId);
 
     return await this.taskTimerRepository.delete(timer);
   }
