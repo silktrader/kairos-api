@@ -15,8 +15,7 @@ import { TasksService } from './tasks.service';
 import { TaskDto } from './models/task.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
-import { Task } from './task.entity';
-import { DateRangeDto } from './models/get-tasks.dto';
+import { DatesDto } from './models/dates.dto';
 import { TaskUpdateDto } from './models/task-update.dto';
 import { DeleteTaskDto } from './models/deleteTask.dto';
 import { TaskTimer } from './task-timer.entity';
@@ -36,11 +35,11 @@ export class TasksController {
   }
 
   @Get()
-  async getTasks(
+  async getTasksInDates(
     @GetUser() user: User,
-    @Query() dateRangeDto: DateRangeDto,
+    @Query() dto: DatesDto,
   ): Promise<ReadonlyArray<TaskDto>> {
-    return await this.taskService.getTasks(user, dateRangeDto);
+    return await this.taskService.getTasksInDates(user, dto.dates);
   }
 
   @Put(':taskId')

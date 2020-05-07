@@ -7,7 +7,6 @@ import { TaskDto } from './models/task.dto';
 import { User } from 'src/auth/user.entity';
 import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
-import { DateRangeDto } from './models/get-tasks.dto';
 import { DeleteTaskDto } from './models/deleteTask.dto';
 import { Connection, Repository, DeleteResult } from 'typeorm';
 import { isSameDay, parseISO } from 'date-fns';
@@ -76,10 +75,9 @@ export class TasksService {
     const parsedDtoDate = parseISO(taskDto.date);
     if (!isSameDay(parseISO(initialTask.date.toString()), parsedDtoDate)) {
       // append the task to the bottom of the date's task list
-      const dateTasks = await this.taskRepository.getTasks(user, {
-        startDate: parsedDtoDate,
-        endDate: parsedDtoDate,
-      });
+      const dateTasks = await this.taskRepository.getTasksInDates(user, [
+        taskDto.date,
+      ]);
       if (dateTasks) {
         // check which task is positioned at the bottom
         const checkingTasks = new Set<Task>(dateTasks);
@@ -223,11 +221,11 @@ export class TasksService {
     return { affectedTask: null };
   }
 
-  async getTasks(
+  async getTasksInDates(
     user: User,
-    dateRangeDto: DateRangeDto,
+    dates: Array<string>,
   ): Promise<ReadonlyArray<TaskDto>> {
-    return (await this.taskRepository.getTasks(user, dateRangeDto)).map(
+    return (await this.taskRepository.getTasksInDates(user, dates)).map(
       this.mapTask,
     );
   }

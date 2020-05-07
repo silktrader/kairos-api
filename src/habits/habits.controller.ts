@@ -16,10 +16,9 @@ import { User } from 'src/auth/user.entity';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
 import { HabitsService } from './habits.service';
-import { DateRangeDto } from 'src/tasks/models/get-tasks.dto';
 import { HabitEntryDto } from './habit-entry.dto';
 import { DeleteResult } from 'typeorm';
-import { ParseDatePipe } from './parse-date.pipe';
+import { DatesDto } from 'src/tasks/models/dates.dto';
 
 @Controller('habits')
 @UseGuards(AuthGuard())
@@ -59,9 +58,9 @@ export class HabitsController {
   @Get('entries')
   async getHabitsEntries(
     @GetUser() user: User,
-    @Query() dateRangeDto: DateRangeDto,
+    @Query() datesDto: DatesDto,
   ): Promise<ReadonlyArray<HabitEntryDto>> {
-    return await this.habitsService.getHabitsEntries(user, dateRangeDto);
+    return await this.habitsService.getHabitsEntries(user, datesDto.dates);
   }
 
   @Post('entries')

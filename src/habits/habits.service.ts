@@ -3,9 +3,8 @@ import { HabitsRepository } from './habits.repository';
 import { HabitDto } from './habit.dto';
 import { Habit } from './habit.entity';
 import { User } from 'src/auth/user.entity';
-import { DateRangeDto } from 'src/tasks/models/get-tasks.dto';
 import { HabitEntry } from './habit-entry.entity';
-import { Repository, Between, DeleteResult } from 'typeorm';
+import { Repository, DeleteResult, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HabitEntryDto } from './habit-entry.dto';
 
@@ -50,15 +49,13 @@ export class HabitsService {
     return await this.habitsRepository.delete(habit);
   }
 
+  // tk must filter users!
   async getHabitsEntries(
     user: User,
-    dateRangeDto: DateRangeDto,
+    dates: Array<string>,
   ): Promise<ReadonlyArray<HabitEntryDto>> {
     return await this.habitsEntriesRepository.find({
-      where: {
-        userId: user.id,
-        date: Between(dateRangeDto.startDate, dateRangeDto.endDate),
-      },
+      date: In(dates),
     });
   }
 

@@ -1,21 +1,17 @@
 import { Task } from './task.entity';
-import { EntityRepository, Repository, Between, DeleteResult } from 'typeorm';
+import { EntityRepository, Repository, DeleteResult, In } from 'typeorm';
 import { TaskDto } from './models/task.dto';
 import { User } from 'src/auth/user.entity';
-import { DateRangeDto } from './models/get-tasks.dto';
-import { parseISO } from 'date-fns';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
-  async getTasks(
+  async getTasksInDates(
     user: User,
-    getTasksDto: DateRangeDto,
+    dates: Array<string>,
   ): Promise<ReadonlyArray<Task>> {
     return this.find({
-      where: {
-        userId: user.id,
-        date: Between(getTasksDto.startDate, getTasksDto.endDate),
-      },
+      userId: user.id,
+      date: In(dates),
     });
   }
 
