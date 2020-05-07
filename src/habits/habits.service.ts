@@ -49,14 +49,16 @@ export class HabitsService {
     return await this.habitsRepository.delete(habit);
   }
 
-  // tk must filter users!
   async getHabitsEntries(
     user: User,
     dates: Array<string>,
   ): Promise<ReadonlyArray<HabitEntryDto>> {
-    return await this.habitsEntriesRepository.find({
-      date: In(dates),
-    });
+    return this.habitsEntriesRepository
+      .createQueryBuilder('habitEntry')
+      .leftJoinAndSelect('habitEntry.habit', 'habit')
+      .where('habitEntry.date IN (:...dates)', { dates })
+      .andWhere('habit.userId = :userId', { userId: user.id })
+      .getMany();
   }
 
   async setHabitEntry(
