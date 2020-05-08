@@ -5,10 +5,9 @@ import {
 } from '@nestjs/common';
 import { TaskDto } from './models/task.dto';
 import { User } from 'src/auth/user.entity';
-import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { DeleteTaskDto } from './models/deleteTask.dto';
-import { Connection, Repository, DeleteResult } from 'typeorm';
+import { Connection, Repository, DeleteResult, In } from 'typeorm';
 import { isSameDay, parseISO } from 'date-fns';
 import { TaskUpdateDto } from './models/task-update.dto';
 import { TagsService } from 'src/tags/tags.service';
@@ -20,7 +19,8 @@ import { TaskTimer } from './task-timer.entity';
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly taskRepository: TaskRepository,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
     @InjectRepository(TaskTag)
     private readonly taskTagRepository: Repository<TaskTag>,
     @InjectRepository(TaskTimer)
@@ -40,7 +40,9 @@ export class TasksService {
     }
 
     // create the task without the attached task tags
-    const task = await this.taskRepository.addTask(taskDto, user);
+    const task = this.taskRepository.create({ ...taskDto, tags: [] });
+    task.user = user;
+    await this.taskRepository.save(task);
 
     // create the relevant task tags
     const taskTags: Array<TaskTag> = [];
@@ -58,26 +60,44 @@ export class TasksService {
     return this.mapTask(await this.taskRepository.findOneOrFail(task.id));
   }
 
+  private async getTaskByIdOrFail(id: number, user: User): Promise<Task> {
+    return this.taskRepository.findOneOrFail(
+      {
+        id,
+        userId: user.id,
+      },
+      { relations: ['tags'] },
+    );
+  }
+
+  private async getTasksInDates(
+    user: User,
+    dates: Array<string>,
+  ): Promise<ReadonlyArray<Task>> {
+    return await this.taskRepository.find({
+      userId: user.id,
+      date: In(dates),
+    });
+  }
+
+  public async getTasks(user: User, dates: Array<string>) {
+    return (await this.getTasksInDates(user, dates)).map(this.mapTask);
+  }
+
   async updateTask(
     user: User,
     taskId: number,
     taskDto: TaskDto,
   ): Promise<TaskDto> {
     // reference the task and check whether it exists
-    const initialTask = await this.taskRepository.getTaskById(taskId, user);
-
-    if (!initialTask) {
-      throw new NotFoundException(`Couldn't find task #${taskId}`);
-    }
+    const task = await this.getTaskByIdOrFail(taskId, user);
 
     // tk this should prob happen client side, position checking
     // check whether the date was changed
     const parsedDtoDate = parseISO(taskDto.date);
-    if (!isSameDay(parseISO(initialTask.date.toString()), parsedDtoDate)) {
+    if (!isSameDay(parseISO(task.date.toString()), parsedDtoDate)) {
       // append the task to the bottom of the date's task list
-      const dateTasks = await this.taskRepository.getTasksInDates(user, [
-        taskDto.date,
-      ]);
+      const dateTasks = await this.getTasksInDates(user, [taskDto.date]);
       if (dateTasks) {
         // check which task is positioned at the bottom
         const checkingTasks = new Set<Task>(dateTasks);
@@ -106,12 +126,12 @@ export class TasksService {
 
     // check for tag entries to remove
     // for (const taskTag of initialTask.tags) {
-    for (let i = initialTask.tags.length - 1; i >= 0; i--) {
-      const name = initialTask.tags[i].tag.name;
+    for (let i = task.tags.length - 1; i >= 0; i--) {
+      const name = task.tags[i].tag.name;
       initialTaskTagNames.push(name);
       if (!taskDto.tags.includes(name)) {
-        this.taskTagRepository.remove(initialTask.tags[i]);
-        initialTask.tags.splice(i, 1);
+        this.taskTagRepository.remove(task.tags[i]);
+        task.tags.splice(i, 1);
       }
     }
 
@@ -123,29 +143,34 @@ export class TasksService {
         const tag = await this.tagsService.getOrAddTag(user, tagName);
 
         const taskTag = this.taskTagRepository.create({
-          task: initialTask,
+          task: task,
           tag: tag,
         });
-        initialTask.tags.push(taskTag);
+        task.tags.push(taskTag);
         await this.taskTagRepository.save(taskTag);
       }
     }
 
-    // tk use mapper
-    return {
-      ...(await this.taskRepository.updateTask(initialTask, taskDto)),
-      date: taskDto.date,
-      tags: taskDto.tags,
-    };
+    // update all fields
+    task.date = taskDto.date;
+    task.title = taskDto.title;
+    task.details = taskDto.details;
+    task.complete = taskDto.complete;
+    task.duration = taskDto.duration;
+    task.previousId = taskDto.previousId;
+
+    return this.mapTask(await this.taskRepository.save(task));
   }
 
   async updateTasks(
     user: User,
     tasksDtos: ReadonlyArray<TaskUpdateDto>,
   ): Promise<ReadonlyArray<TaskDto>> {
-    const tasks = await this.taskRepository.getUserTasksById(
-      user.id,
+    const tasks = await this.taskRepository.findByIds(
       tasksDtos.map(dto => dto.id),
+      {
+        userId: user.id,
+      },
     );
 
     if (tasks.length !== tasksDtos.length) {
@@ -189,7 +214,7 @@ export class TasksService {
 
   async deleteTask(user: User, taskId: number): Promise<DeleteTaskDto> {
     // get the task, making sure the user owns it
-    const deletedTask = await this.taskRepository.getTaskById(taskId, user);
+    const deletedTask = await this.getTaskByIdOrFail(taskId, user);
 
     // first remove all task tags entries, as cascades are turned off
     const deletedTaskTags = await this.taskTagRepository.find({
@@ -198,20 +223,18 @@ export class TasksService {
     await this.taskTagRepository.remove(deletedTaskTags);
 
     // remove the task
-    await this.taskRepository.deleteTask(deletedTask);
+    await this.taskRepository.delete(deletedTask);
 
     // check whether there's a task which references the deleted one
-    const affectedTask = await this.taskRepository.getTaskByPreviousId(
-      taskId,
-      user,
+    const affectedTask = await this.taskRepository.findOne(
+      { previousId: taskId, userId: user.id },
+      { relations: ['tags'] },
     );
 
     // shorten the linked list and return the affected task
     if (affectedTask) {
-      await this.taskRepository.updateTaskPreviousId(
-        affectedTask,
-        deletedTask.previousId,
-      );
+      affectedTask.previousId = deletedTask.previousId;
+      await this.taskRepository.save(affectedTask);
 
       return {
         affectedTask: this.mapTask(affectedTask),
@@ -219,16 +242,6 @@ export class TasksService {
     }
 
     return { affectedTask: null };
-  }
-
-  async getTasksInDates(
-    user: User,
-    dates: Array<string>,
-  ): Promise<ReadonlyArray<TaskDto>> {
-    //throw new NotFoundException();
-    return (await this.taskRepository.getTasksInDates(user, dates)).map(
-      this.mapTask,
-    );
   }
 
   private mapTask(task: Task): TaskDto {
@@ -258,7 +271,7 @@ export class TasksService {
       .getMany();
   }
 
-  /** Check whether the task exists and ensure that the user owns it */
+  /** Check whether the timer exists and ensure that the user owns it */
   async getTimerOrFail(user: User, taskId: number): Promise<TaskTimer> {
     const timer = await this.taskTimerRepository
       .createQueryBuilder('taskTimer')

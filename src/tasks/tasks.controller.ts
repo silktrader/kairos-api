@@ -39,7 +39,7 @@ export class TasksController {
     @GetUser() user: User,
     @Query() dto: DatesDto,
   ): Promise<ReadonlyArray<TaskDto>> {
-    return await this.taskService.getTasksInDates(user, dto.dates);
+    return await this.taskService.getTasks(user, dto.dates);
   }
 
   @Put(':taskId')
