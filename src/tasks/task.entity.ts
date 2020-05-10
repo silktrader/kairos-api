@@ -13,8 +13,8 @@ export class Task {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'date' })
-  date: string;
+  @Column({ type: 'date', nullable: true })
+  date: string | null;
 
   @Column()
   title: string;

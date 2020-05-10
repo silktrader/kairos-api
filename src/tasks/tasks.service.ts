@@ -80,8 +80,25 @@ export class TasksService {
     });
   }
 
-  public async getTasks(user: User, dates: Array<string>) {
+  /** Find all the tasks associated to a collection of dates */
+  async getDatesTasks(user: User, dates: Array<string>) {
     return (await this.getTasksInDates(user, dates)).map(this.mapTask);
+  }
+
+  /** Find all the tasks belonging to a single date */
+  async getDateTasks(
+    user: User,
+    date: string,
+  ): Promise<ReadonlyArray<TaskDto>> {
+    return (await this.taskRepository.find({ userId: user.id, date })).map(
+      this.mapTask,
+    );
+  }
+
+  async getUnscheduledTasks(user: User): Promise<ReadonlyArray<TaskDto>> {
+    return (
+      await this.taskRepository.find({ userId: user.id, date: null })
+    ).map(this.mapTask);
   }
 
   async updateTask(

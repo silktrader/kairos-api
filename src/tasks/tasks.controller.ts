@@ -39,7 +39,22 @@ export class TasksController {
     @GetUser() user: User,
     @Query() dto: DatesDto,
   ): Promise<ReadonlyArray<TaskDto>> {
-    return await this.taskService.getTasks(user, dto.dates);
+    return await this.taskService.getDatesTasks(user, dto.dates);
+  }
+
+  @Get('date/:date')
+  async getDateTasks(
+    @GetUser() user: User,
+    @Param('date') date: string,
+  ): Promise<ReadonlyArray<TaskDto>> {
+    return await this.taskService.getDateTasks(user, date);
+  }
+
+  @Get('unscheduled')
+  async getUnscheduledTasks(
+    @GetUser() user: User,
+  ): Promise<ReadonlyArray<TaskDto>> {
+    return await this.taskService.getUnscheduledTasks(user);
   }
 
   @Put(':taskId')
@@ -69,7 +84,7 @@ export class TasksController {
 
   /* Timer endpoints */
 
-  @Get('/timers')
+  @Get('timers')
   async getTimers(@GetUser() user: User): Promise<Array<TaskTimer>> {
     return await this.taskService.getTimers(user);
   }
