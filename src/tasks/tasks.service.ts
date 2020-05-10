@@ -111,8 +111,10 @@ export class TasksService {
 
     // tk this should prob happen client side, position checking
     // check whether the date was changed
-    const parsedDtoDate = parseISO(taskDto.date);
-    if (!isSameDay(parseISO(task.date.toString()), parsedDtoDate)) {
+    if (
+      !task.date ||
+      !isSameDay(parseISO(task.date.toString()), parseISO(taskDto.date))
+    ) {
       // append the task to the bottom of the date's task list
       const dateTasks = await this.getTasksInDates(user, [taskDto.date]);
       if (dateTasks) {

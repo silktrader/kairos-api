@@ -3,9 +3,9 @@ import { IsNotEmpty, IsISO8601, IsOptional, Length } from 'class-validator';
 export class TaskDto {
   id?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsISO8601()
-  date: string;
+  date: string | null;
 
   @IsNotEmpty()
   @Length(5, 50)
