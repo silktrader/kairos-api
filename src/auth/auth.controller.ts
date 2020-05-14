@@ -1,7 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Request, UseGuards } from '@nestjs/common';
 import { CredentialsDto } from './credentials.dto';
 import { AuthService } from './auth.service';
 import { SigninDto } from './signin.dto';
+import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -12,8 +13,10 @@ export class AuthController {
     return this.authService.signUp(credentialsDto);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('/signin')
-  signIn(@Body() credentialsDto: CredentialsDto): Promise<SigninDto> {
-    return this.authService.signIn(credentialsDto);
+  async signIn(@Request() request): Promise<SigninDto> {
+    // will only be invoked if the user has been validated by the local auth guard
+    return this.authService.signIn(request.user);
   }
 }
